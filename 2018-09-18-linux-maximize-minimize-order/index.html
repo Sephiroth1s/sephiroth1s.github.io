@@ -430,7 +430,7 @@
     
       
       
-        <a title='Parrot 窗口最大化最小化按钮顺序修改' href='/2018-09-18-linux-maximize-minimize-order/'><img class='thumbnail' src='https://cdn.jsdelivr.net/gh/phpszhdyy/blog_img/img/test/系统设置.png'></a>
+        <a title='Parrot 窗口最大化最小化按钮顺序修改' href='/2018-09-18-linux-maximize-minimize-order/'><img class='thumbnail' src='https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/系统设置.png'></a>
       
       <div class="meta" id="header-meta">
         
@@ -517,15 +517,15 @@
         <div class="article-entry" itemprop="articleBody">
           
           <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><ul>
-<li>Parrot 默认的最大化最小化的位置在左边，系统中有下图的选项可以直接修改，将这些按钮换到右边或者左边。<br><img src="https://cdn.jsdelivr.net/gh/phpszhdyy/blog_img/img/test/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E7%BD%AE.png" alt=""></li>
-<li>但是设置成右边之后再设置为左边，在我的机器上发现回到左边，最大化和最小化的位置颠倒了,如图,虽然不影响使用，但是难受啊233<br><img src="https://cdn.jsdelivr.net/gh/phpszhdyy/blog_img/img/test/%E4%BF%AE%E5%A4%8D%E4%BD%8D%E7%BD%AE.png" alt=""> </li>
+<li>Parrot 默认的最大化最小化的位置在左边，系统中有下图的选项可以直接修改，将这些按钮换到右边或者左边。<br><img src="https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E7%BD%AE.png" alt=""></li>
+<li>但是设置成右边之后再设置为左边，在我的机器上发现回到左边，最大化和最小化的位置颠倒了,如图,虽然不影响使用，但是难受啊233<br><img src="https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/%E4%BF%AE%E5%A4%8D%E4%BD%8D%E7%BD%AE.png" alt=""> </li>
 </ul>
 <h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><ul>
 <li>通过一波搜素发现有这几个可以用来修改设置的工具 <code>gconf-editor</code> <code>dconf-editor</code> <code>Tweaks</code>， Parrot 自带了 <code>dconf-editor</code> 所以使用它来修复一下</li>
-<li>在终端输入 <code>dconf-editor</code> 在弹出的窗口搜索 <code>button-layout</code> ，点击搜索结果中的第一个<br><img src="https://cdn.jsdelivr.net/gh/phpszhdyy/blog_img/img/test/dconf.png" alt="dconf 搜索图"></li>
+<li>在终端输入 <code>dconf-editor</code> 在弹出的窗口搜索 <code>button-layout</code> ，点击搜索结果中的第一个<br><img src="https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/dconf.png" alt="dconf 搜索图"></li>
 <li>关闭使用默认值，在自定义值出填入 <code>close,maximize,minimize:</code>，这个表示在左侧按钮的顺序为 <code>关闭</code> <code>最大化</code> <code>最小化</code>。</li>
 <li>如果想换到右边可以使用默认值，或者在自定义值出填入 <code>menu:minimize,maximize,close</code>，表示按钮在右侧 顺序为 <code>最小化</code> <code>最大化</code> <code>关闭</code>。</li>
-<li>如果想要自定义别的顺序只要修改 <code>minimize</code> <code>maximize</code> <code>close</code> 这三个的顺序即可，其他的是用来标定在左还是在右。经过修改之后系统设置的左右设置就会无法设置只能通过 <code>dconf-editor</code> ，如果想恢复到系统接管，请打开使用默认值<br><img src="https://cdn.jsdelivr.net/gh/phpszhdyy/blog_img/img/test/%E4%BF%AE%E5%A4%8D%E5%AE%8C%E6%88%90.png" alt="修复完成"></li>
+<li>如果想要自定义别的顺序只要修改 <code>minimize</code> <code>maximize</code> <code>close</code> 这三个的顺序即可，其他的是用来标定在左还是在右。经过修改之后系统设置的左右设置就会无法设置只能通过 <code>dconf-editor</code> ，如果想恢复到系统接管，请打开使用默认值<br><img src="https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/%E4%BF%AE%E5%A4%8D%E5%AE%8C%E6%88%90.png" alt="修复完成"></li>
 </ul>
 <h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><ul>
 <li><p><a href="https://blog.csdn.net/xuezhimeng2010/article/details/10168995" target="_blank" rel="noopener">参考链接1</a></p>
@@ -585,10 +585,10 @@
     <div class='new-meta-box'>
       
         
-          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2020-10-13T01:14:55+08:00">
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-01-26T22:01:59+08:00">
   <a class='notlink'>
     <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
-    <p>更新于：2020年10月13日</p>
+    <p>更新于：2021年1月26日</p>
   </a>
 </div>
 
@@ -612,7 +612,7 @@
       
         <a class="-mob-share-qq" title="" rel="external nofollow noopener noreferrer"
           
-          href="http://connect.qq.com/widget/shareqq/index.html?url=https://sephiroth1s.top/2018-09-18-linux-maximize-minimize-order/&title=Parrot 窗口最大化最小化按钮顺序修改 - Sephiroth1s'blog&pics=https://cdn.jsdelivr.net/gh/phpszhdyy/blog_img/img/test/系统设置.png&summary="
+          href="http://connect.qq.com/widget/shareqq/index.html?url=https://sephiroth1s.top/2018-09-18-linux-maximize-minimize-order/&title=Parrot 窗口最大化最小化按钮顺序修改 - Sephiroth1s'blog&pics=https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/系统设置.png&summary="
           
           >
           
@@ -624,7 +624,7 @@
       
         <a class="-mob-share-qzone" title="" rel="external nofollow noopener noreferrer"
           
-          href="https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=https://sephiroth1s.top/2018-09-18-linux-maximize-minimize-order/&title=Parrot 窗口最大化最小化按钮顺序修改 - Sephiroth1s'blog&pics=https://cdn.jsdelivr.net/gh/phpszhdyy/blog_img/img/test/系统设置.png&summary="
+          href="https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=https://sephiroth1s.top/2018-09-18-linux-maximize-minimize-order/&title=Parrot 窗口最大化最小化按钮顺序修改 - Sephiroth1s'blog&pics=https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/系统设置.png&summary="
           
           >
           
@@ -636,7 +636,7 @@
       
         <a class="-mob-share-weibo" title="" rel="external nofollow noopener noreferrer"
           
-          href="http://service.weibo.com/share/share.php?url=https://sephiroth1s.top/2018-09-18-linux-maximize-minimize-order/&title=Parrot 窗口最大化最小化按钮顺序修改 - Sephiroth1s'blog&pics=https://cdn.jsdelivr.net/gh/phpszhdyy/blog_img/img/test/系统设置.png&summary="
+          href="http://service.weibo.com/share/share.php?url=https://sephiroth1s.top/2018-09-18-linux-maximize-minimize-order/&title=Parrot 窗口最大化最小化按钮顺序修改 - Sephiroth1s'blog&pics=https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/系统设置.png&summary="
           
           >
           
