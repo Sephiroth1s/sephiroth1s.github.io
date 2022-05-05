@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search> 
+  
+  
+    
+    <entry>
+      <title>linux samba 设置共享中的坑备忘</title>
+      <link href="/2022-05-01-Linux-samba-setup-problem-memo/"/>
+      <url>/2022-05-01-Linux-samba-setup-problem-memo/</url>
+      
+        <content type="html"><![CDATA[<h2 id="一、guest属性坑"><a href="#一、guest属性坑" class="headerlink" title="一、guest属性坑"></a>一、guest属性坑</h2><h3 id="1坑、smb-conf-配置"><a href="#1坑、smb-conf-配置" class="headerlink" title="1坑、smb.conf 配置"></a>1坑、smb.conf 配置</h3><p>建议调整smb.conf配置的时候关闭 map to guest 属性<br>这个属性会，在认证失败的时候自动切换到guest用户登录。</p><p>但是在win10中默认使用当前用户名登录，如果失败，根据上面这个属性，会使用guest用户登录，<br>win10中启用不安全的来宾登录选项未配置，或者被禁用，则会导致在文件管理器无法访问共享目录，如下图<img src="https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/主要原因.png" alt="主要原因" style="zoom: 80%;" /></p><h3 id="2坑、获取更多错误信息"><a href="#2坑、获取更多错误信息" class="headerlink" title="2坑、获取更多错误信息"></a>2坑、获取更多错误信息</h3><p>如果使用文件管理器直接访问搜索到的共享文件夹，会无法访问，并且疑难解答也不能获得更多信息，不方便排查错误。<br>但如果使用WIN+r <code>\\ip</code> 或<code>\\主机名</code>这种方式访问，则可以获得更多错误信息。我通过这个方式获得如下信息，<img src="https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/%E6%8A%A5%E9%94%99%E6%9F%A5%E6%89%BE%E4%BE%9D%E6%8D%AE.png" alt="报错查找依据">，结合搜索结果调整本地策略设置中的来并登录选项</p><h3 id="3、排错补充"><a href="#3、排错补充" class="headerlink" title="3、排错补充"></a>3、排错补充</h3><p>在linux 中smb服务端中的错误信息可以从 /var/log/samba/目录中的log文件中获取</p><h3 id="4、如果有其它nas-的使用需求，建议开启这个属性，map-to-guest-不动。"><a href="#4、如果有其它nas-的使用需求，建议开启这个属性，map-to-guest-不动。" class="headerlink" title="4、如果有其它nas 的使用需求，建议开启这个属性，map to guest 不动。"></a>4、如果有其它nas 的使用需求，建议开启这个属性，map to guest 不动。</h3><p><a href="https://www.jianshu.com/p/be7dc5875923" target="_blank" rel="noopener">参考链接1</a><br><a href="https://askubuntu.com/questions/1089694/problems-setting-up-samba-and-connect-with-windows-you-cant-access-this-share" target="_blank" rel="noopener">参考链接2</a></p><h2 id="二、ls显示-权限问题及ios相关设置"><a href="#二、ls显示-权限问题及ios相关设置" class="headerlink" title="二、ls显示+权限问题及ios相关设置"></a>二、<code>ls</code>显示<code>+</code>权限问题及ios相关设置</h2><p>为了ios 系统正确使用，需要在smb配置中加入了<code>acl_xattr</code> 属性，无该配置ios使用异常，windows 无影响，具体现象见<a href="https://blog.csdn.net/SmallWhitee/article/details/120936795" target="_blank" rel="noopener">参考链接</a></p><h3 id="1、偷懒方案"><a href="#1、偷懒方案" class="headerlink" title="1、偷懒方案"></a>1、偷懒方案</h3><p>直接在smb.conf文件的global节点 添加下面这个属性，</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[global]</span><br><span class="line">  vfs objects &#x3D; acl_xattr catia fruit streams_xattr</span><br></pre></td></tr></table></figure><p>但会有一点副作用，新建的文件除了你设置的权限外，会多出个 <code>+</code> 权限，可以通过<code>ls -l</code>命令观察到，</p><ul><li>不带+号</li></ul><p><img src="https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/%E6%97%A0acl%E6%9D%83%E9%99%90.png" alt="无权限+"></p><ul><li>带加号权限</li></ul><p><img src="https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/%E6%9C%89acl%E6%9D%83%E9%99%90.png" alt="有权限+"></p><p>这个属于指定的某个用户/组的权限，是由于设置了<code>acl_xattr</code>扩展属性导致的。ACL的全称是 Access Control List (访问控制列表) 。也可以用<code>getfacl/setfacl</code>来手动获取/设置<code>+</code>权限</p><h3 id="2、正规解决方案"><a href="#2、正规解决方案" class="headerlink" title="2、正规解决方案"></a>2、正规解决方案</h3><p>在global中加入如下属性更好的支持苹果中使用samba，这个方案不会产生<code>+</code>权限问题，具体如下</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[Global]</span><br><span class="line">min protocol &#x3D; SMB2</span><br><span class="line">vfs objects &#x3D; fruit streams_xattr  </span><br><span class="line">fruit:metadata &#x3D; stream</span><br><span class="line">fruit:model &#x3D; MacSamba</span><br><span class="line">fruit:posix_rename &#x3D; yes </span><br><span class="line">fruit:veto_appledouble &#x3D; no</span><br><span class="line">fruit:wipe_intentionally_left_blank_rfork &#x3D; yes </span><br><span class="line">fruit:delete_empty_adfiles &#x3D; yes </span><br><span class="line"></span><br><span class="line">[TimeMachineBackup]</span><br><span class="line">vfs objects &#x3D; fruit streams_xattr</span><br><span class="line">fruit:time machine &#x3D; yes</span><br><span class="line">#  fruit:time machine max size &#x3D; SIZE</span><br></pre></td></tr></table></figure><p>需要详细信息可以参考<a href="https://wiki.samba.org/index.php/Configure_Samba_to_Work_Better_with_Mac_OS_X" target="_blank" rel="noopener">这个</a></p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 日常填坑 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Linux </tag>
+            
+            <tag> samba </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>关于valine的一些吐槽</title>
+      <link href="/2020-10-12-about-valine/"/>
+      <url>/2020-10-12-about-valine/</url>
+      
+        <content type="html"><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>好久不更新博客，终于闲下心来给博客换个主题，主要是发现旧博客存档重装系统没了，配置教程的网址也凉凉了，看下更新时间两年前，所以决定换了</p><h2 id="评论系统"><a href="#评论系统" class="headerlink" title="评论系统"></a>评论系统</h2><p>新主题内置了valine ，所以想着直接把原来的appid之类的粘贴过来就好了，然而发现评论框一直在转圈没办法评论，直到我打开首页发现这个<img src="https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/%E9%9C%80%E5%AE%9E%E5%90%8D%E8%AE%A4%E8%AF%81%E6%88%AA%E5%9B%BE.png" alt=""></p><p>这就很尴尬了，简单上网搜了下有以下两种解决方案</p><h3 id="使用valine-admin"><a href="#使用valine-admin" class="headerlink" title="使用valine-admin"></a>使用valine-admin</h3><p><a href="https://www.cz5h.com/article/269.html" target="_blank" rel="noopener">使用valine-admin参考链接</a> 这里已经写的很详细了，</p><p>有一点倒是蛮有趣的，我的旧博客主题倒是可以正常使用原来的appid 对应的应用（白名单已经放行localhost:4000）。</p><p>不过我还是推荐下面的方法。简单直接一点</p><h3 id="使用国际版"><a href="#使用国际版" class="headerlink" title="使用国际版"></a>使用国际版</h3><p><a href="https://v2ex.com/t/590872" target="_blank" rel="noopener">信息来源链接</a>，国际版不需要实名制，需要绑定手机号，可以使用Google voice，记得+1 然后接电话号码。可以自定义后台管理域名，国内版则必须实名制才能使用。</p><p><img src="https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/%E5%BF%85%E9%A1%BB%E6%8F%90%E4%BE%9B%E6%89%8B%E6%9C%BA%E5%8F%B7.png" alt="绑定手机号提示截图"></p><h2 id="吐槽"><a href="#吐槽" class="headerlink" title="吐槽"></a>吐槽</h2><p><a href="https://leancloud.cn/" target="_blank" rel="noopener">https://leancloud.cn/</a> 被停止解析我好像是当时咕咕咕的时候，看到过邮件有点印象， leancloud 被这么搞过之后肯定只能老老实实听话了，所以不能怪他，毕竟.cn 域名都有这个风险。举个例子即使淘宝也不用.cn域名，所以懂了吧2333。</p><p>博客当前正在使用的当年年少无知弄的.cn域名，可惜啊，没想到cn域名只是我从地主租来的地带霸王条款的那种，最近在想替代方案，查过资料，cn域名这种即使你跨国层层阻挠拖延成功转移，实际上也是没有屌用的，还是会有停止解析的风险。</p><p>所以不打算挣扎了，目前top域名挺便宜的hh。</p><p>顺便可以看看这个科普下cn域名的<a href="https://www.williamlong.info/archives/1654.html" target="_blank" rel="noopener">危害</a></p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 杂七杂八 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 博客 </tag>
+            
+            <tag> 存档 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>Parrot 窗口最大化最小化按钮顺序修改</title>
+      <link href="/2018-09-18-linux-maximize-minimize-order/"/>
+      <url>/2018-09-18-linux-maximize-minimize-order/</url>
+      
+        <content type="html"><![CDATA[<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><ul><li>Parrot 默认的最大化最小化的位置在左边，系统中有下图的选项可以直接修改，将这些按钮换到右边或者左边。<br><img src="https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E7%BD%AE.png" alt=""></li><li>但是设置成右边之后再设置为左边，在我的机器上发现回到左边，最大化和最小化的位置颠倒了,如图,虽然不影响使用，但是难受啊233<br><img src="https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/%E4%BF%AE%E5%A4%8D%E4%BD%8D%E7%BD%AE.png" alt=""> </li></ul><h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><ul><li>通过一波搜素发现有这几个可以用来修改设置的工具 <code>gconf-editor</code> <code>dconf-editor</code> <code>Tweaks</code>， Parrot 自带了 <code>dconf-editor</code> 所以使用它来修复一下</li><li>在终端输入 <code>dconf-editor</code> 在弹出的窗口搜索 <code>button-layout</code> ，点击搜索结果中的第一个<br><img src="https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/dconf.png" alt="dconf 搜索图"></li><li>关闭使用默认值，在自定义值出填入 <code>close,maximize,minimize:</code>，这个表示在左侧按钮的顺序为 <code>关闭</code> <code>最大化</code> <code>最小化</code>。</li><li>如果想换到右边可以使用默认值，或者在自定义值出填入 <code>menu:minimize,maximize,close</code>，表示按钮在右侧 顺序为 <code>最小化</code> <code>最大化</code> <code>关闭</code>。</li><li>如果想要自定义别的顺序只要修改 <code>minimize</code> <code>maximize</code> <code>close</code> 这三个的顺序即可，其他的是用来标定在左还是在右。经过修改之后系统设置的左右设置就会无法设置只能通过 <code>dconf-editor</code> ，如果想恢复到系统接管，请打开使用默认值<br><img src="https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/%E4%BF%AE%E5%A4%8D%E5%AE%8C%E6%88%90.png" alt="修复完成"></li></ul><h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><ul><li><p><a href="https://blog.csdn.net/xuezhimeng2010/article/details/10168995" target="_blank" rel="noopener">参考链接1</a></p></li><li><p><a href="https://blog.csdn.net/lht0211/article/details/8844741?fps=1&locationNum=9" target="_blank" rel="noopener">参考链接2</a></p></li><li><p><a href="https://blog.csdn.net/lengchu_org/article/details/81022724" target="_blank" rel="noopener">参考链接3</a></p></li></ul>]]></content>
+      
+      
+      <categories>
+          
+          <category> 日常填坑 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Linux </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>Parrot下 pycharm 配置 pyqt5 开发环境</title>
+      <link href="/2018-09-15-linux-pycharm-pyqt5/"/>
+      <url>/2018-09-15-linux-pycharm-pyqt5/</url>
+      
+        <content type="html"><![CDATA[<h2 id="前言（可直接跳过）"><a href="#前言（可直接跳过）" class="headerlink" title="前言（可直接跳过）"></a>前言（可直接跳过）</h2><ul><li>之前用 QT 写过串口助手，发现这玩意真TM好用，还跨平台，但是有时候有些东西还是要自己来实现，刚好会点 python 就发现了 PYQT 这个有趣的玩意，结合了 python 和 QT 的优点，可以偷懒了:)</li><li>在使用过过程中使用过两个开发环境 Eric6 和 pycharm,简答描述一下前者的使用体验，是专门用于 PYQT 开发的 IDE，本身也是 python 开发的，可以直接调用 QtDesigner 并且可以将 ui 文件直接转换成 py 代码，还有针对 QT 的信号和槽等机制的一键生成代码段的功能，整体界面跟 eclipse 类似，但是有个缺点，代码补全效果弱爆，甚至可能崩溃，在用过 pycharm 之后更是明显感觉到差距。（没有代码补全完全活不下去了）。</li><li>ps:以下内容 QT 均指 C++ 版本的，PYQT 均指 python 版本的</li></ul><h2 id="1-PYQT-环境配置"><a href="#1-PYQT-环境配置" class="headerlink" title="1.PYQT 环境配置"></a>1.PYQT 环境配置</h2><ul><li>由于 Parrot 自带的 python3 没有 pip 需要装一下，执行以下命令<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install python3-pip</span><br></pre></td></tr></table></figure></li><li>PYQT 对于 python3 有官方的支持，对 python2 没有官方的支持，如果一定要在 2 的环境下可以尝试安装 python-qt5，本文使用的是 python3环境，执行以下命令安装 pyqt5<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip3 install pyqt5</span><br></pre></td></tr></table></figure></li><li>Parrot 自带 QT5 环境，但针对 C++ 环境，所以可用的只有 QtDesigner，我们还需要将 ui 文件转换为py代码的工具 pyuic 和其他 QT 附属工具的 py 版本，执行以下命令进行安装<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install qttools5-dev-tools</span><br></pre></td></tr></table></figure></li></ul><h2 id="2-pycharm-配置"><a href="#2-pycharm-配置" class="headerlink" title="2.pycharm 配置"></a>2.pycharm 配置</h2><ul><li>为了调用 PYQT 的工具，我们需要使用 pycharm 的外部扩展工具功能，具体位置为：File –&gt; setting –&gt; Tools –&gt; External Tools</li><li>主要配置的参数有三个 Program，Arguments,Wroking directory</li><li>下图是 QtDesigner 的配置，除了 Program 选项其他选项也可以不设置。下面两个可以选填一个到 Program 选项里<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;usr&#x2F;lib&#x2F;qt5&#x2F;bin&#x2F;designer （前面安装的工具集）</span><br><span class="line">&#x2F;usr&#x2F;bin&#x2F;designer （系统环境 QT 带的）</span><br></pre></td></tr></table></figure><img src="https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/QtDesigner.png" alt="QtDesigner配置图"></li><li>配置 pyuic，将 ui 文件转换为 py 代码，在工具配置界面填入如下内容<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Program:&#x2F;usr&#x2F;lib&#x2F;python3</span><br><span class="line">Arguments:-m PyQt5.uic.pyuic $FileName$ -xo $FileNameWithoutExtension$.py</span><br><span class="line">Wroking directory:$FileDir$</span><br></pre></td></tr></table></figure><img src="https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/Pyuic.png" alt="Pyuic配置图"></li><li>这里顺便提一下 -xo 参数如果去掉 x 参数生成的 py 代码就会缺少下面这一段<br><img src="https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/x%E5%8F%82%E6%95%B0.png" alt="x参数配置图"></li><li>至此基本配置完毕，附上运行效果图<br><img src="https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/%E6%91%B8%E9%B1%BC%E6%88%90%E5%8A%9F.png" alt="效果图"><h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2></li><li><a href="http://pyqt.sourceforge.net/Docs/PyQt5/designer.html?highlight=pyuic#cmdoption-pyuic5-x&tdsourcetag=s_pctim_aiomsg" target="_blank" rel="noopener">官方文档</a><h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2></li><li>pycharm 真好用</li></ul>]]></content>
+      
+      
+      <categories>
+          
+          <category> 日常填坑 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Linux </tag>
+            
+            <tag> Python </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>Virtualbox 开机进入UEFI shell</title>
+      <link href="/2018-05-28-virtualbox-uefi-shell/"/>
+      <url>/2018-05-28-virtualbox-uefi-shell/</url>
+      
+        <content type="html"><![CDATA[<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><ul><li>好久之前在虚拟机里面装的 parrot 发现启动之后没有进入引导界面，而是到了下面的奇怪界面。按英文就是也就是 UEFI shell 界面  。<br>一直想修复一下又比较懒，用实机比较多，毕竟虚拟机性能还是差点，刚好今天有空。<br>PS：当时装的好像是是 parrot 3.7 ，而且其他小伙伴貌似也没翻车。。</li></ul><h2 id="原因分析"><a href="#原因分析" class="headerlink" title="原因分析"></a>原因分析</h2><ul><li>貌似 Virtualbox  用 EFI 引导方式安装的系统 有时候就会识别不到 系统EFI启动项 即grubx64.efi 这个文件没有成功载入。</li></ul><h2 id="简单启动"><a href="#简单启动" class="headerlink" title="简单启动"></a>简单启动</h2><ul><li>在 UEFI shell 下直接输入如下命令就可以回到正常的引导步骤，不过治标不治本，再次重启还是会识别不到。下面提供两种方案<br>PS:  </li></ul><p>1.之前我都是一点点 <code>cd</code>  到 efi文件的位置的 (￣<em>,￣ ) 因为要找在<code>FS0:</code> 还是 <code>FS1:</code> ,下面这个命令就直接不用找了 -</em>-<br>2.斜杠别弄反 是 <code>\</code>  </p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\EFI\parrot\grubx64.efi</span><br></pre></td></tr></table></figure><h2 id="方案一"><a href="#方案一" class="headerlink" title="方案一"></a>方案一</h2><ul><li>按照 简单启动 进入系统之后输入如下两条命令<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo mkdir &#x2F;boot&#x2F;efi&#x2F;EFI&#x2F;boot</span><br><span class="line">sudo cp &#x2F;boot&#x2F;efi&#x2F;EFI&#x2F;parrot&#x2F;grubx64.efi &#x2F;boot&#x2F;efi&#x2F;EFI&#x2F;boot&#x2F;bootx64.efi</span><br></pre></td></tr></table></figure>PS：/boot 文件夹再往里就需要root用户才能看了，不过上面的两步操作可以正常操作，如果想确定有没有修改成功，请切换到root用户 </li></ul><h2 id="方案二"><a href="#方案二" class="headerlink" title="方案二"></a>方案二</h2><ul><li>直接在 UEFI shell 界面进行操作，省去了进去系统的步骤。<br>这里有个前提，需要知道自己EFI文件夹在 <code>FS0:</code> 还是 <code>FS1:</code>，emmm一个个试吧，没有找到合适的命令一下子显示。<br>具体参照下图，找到之后执行如下命令</li></ul><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir \EFI\boot</span><br><span class="line">cp \EFI\parrot\grubx64.efi \EFI\boot\bootx64.efi</span><br></pre></td></tr></table></figure><ul><li>执行成功如下图，再输入 <code>exit</code> 回车再回车就正常引导啦。(｡･∀･)ﾉﾞ</li></ul><h2 id="结果分析"><a href="#结果分析" class="headerlink" title="结果分析"></a>结果分析</h2><ul><li>可以看到其实只是做了个文件复制而已， EFI/boot/bootx64.efi 这个文件夹是 VirtualBox 的默认文件夹，如果正常启动没有找到或者识别，就会自动选用这个。<br>最后附上成功引导的截图</li></ul><h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a href="https://askubuntu.com/questions/428789/uefi-boot-in-virtualbox-ubuntu-12-04" target="_blank" rel="noopener"> UEFI boot in virtualbox</a></p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 日常填坑 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Linux </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>记一次 win10 更新导致的双系统 grub 引导丢失（无法进入linux）</title>
+      <link href="/2018-04-16-win10-update-break-gurb/"/>
+      <url>/2018-04-16-win10-update-break-gurb/</url>
+      
+        <content type="html"><![CDATA[<h2 id="闲话"><a href="#闲话" class="headerlink" title="闲话"></a>闲话</h2><ul><li>本来这两天折腾好爱国渠道，想到 parrot 还没配置，，，然而发现每次都进的 win10，之前一直没留意-_-||，<br>只是感觉少了点什么。在 bios 里面设置了一下也是直接闪退，然后转 win10启动了 </li></ul><h2 id="LIVE-进入"><a href="#LIVE-进入" class="headerlink" title="LIVE 进入"></a>LIVE 进入</h2><ul><li>先 从 LIVE 进入系统看下资料还在不在，看了下 boot 目录下面 grub 下没有看到明显的文件缺失，EFI 下面变成空的了。</li><li>所以重新安装一下 grub 缺的文件就装回来了吧emmm，挂载原来的 linux 分区。</li></ul><h3 id="方案一"><a href="#方案一" class="headerlink" title="方案一"></a>方案一</h3><ol><li><p>LIVE 进入，先查看一下 linux 的系统分区,如下图所示我的系统在 sda7</p> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo fdisk -l</span><br></pre></td></tr></table></figure></li></ol><ol start="2"><li><p>挂载分区</p> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo mount &#x2F;dev&#x2F;sda7 &#x2F;mnt</span><br></pre></td></tr></table></figure></li><li><p>暂时挂载需要用到的目录</p> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo mount --bind &#x2F;dev &#x2F;mnt&#x2F;dev</span><br><span class="line">sudo mount --bind &#x2F;proc &#x2F;mnt&#x2F;proc</span><br><span class="line">sudo mount --bind &#x2F;sys &#x2F;mnt&#x2F;sys</span><br></pre></td></tr></table></figure></li><li><p>修改程序执行的 参考根目录位置为原系统目录</p> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo chroot &#x2F;mnt</span><br></pre></td></tr></table></figure></li><li><p><span id="5">安装修复 grub</span></p> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo grub-install &#x2F;dev&#x2F;sda7</span><br><span class="line">sduo update-grub</span><br></pre></td></tr></table></figure></li><li><p>退出环境&amp;卸载挂载的目录和设备</p> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">exit</span><br><span class="line">sudo umount &#x2F;mnt&#x2F;dev</span><br><span class="line">sudo umount &#x2F;mnt&#x2F;proc</span><br><span class="line">sudo umount &#x2F;mnt&#x2F;sys</span><br><span class="line">sudo umount &#x2F;mount</span><br></pre></td></tr></table></figure></li><li><p>重启收工</p></li></ol><p>*<em>ps: *</em><br>在执行 <a href="#5">步骤5</a> 有可能遇到找不到文件问题 缺少EFI等，导致安装失败，所以我换了<a href="#5">方案二</a> </p><h3 id="方案二（推荐）"><a href="#方案二（推荐）" class="headerlink" title="方案二（推荐）"></a>方案二（推荐）</h3><ol><li><p>从 LIVE u盘选择界面按 c 进入 grub 命令行</p></li><li><p>输入 <code>set</code> 可以查看 当前引导是哪个分区</p> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cmdpath&#x3D;(hd0,gpt1)&#x2F;EFI&#x2F;parrot</span><br><span class="line">prefix&#x3D;(hd0,gpt1)&#x2F;boot&#x2F;grub</span><br><span class="line">root&#x3D;hd0,gpt1</span><br></pre></td></tr></table></figure><p> 主要看上面这三个其他可以忽略。(hd0,gpt1)这个部分是第一块硬盘的第一个分区，即u盘。</p></li><li><p>输入 <code>ls</code> 显示类似如下信息</p> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(hd0,gpt1) (hd1,gpt2) (hd1,gpt3) (hd1,gpt4) (hd1,gpt5) (hd1,gpt6) (hd1,gpt7)......</span><br></pre></td></tr></table></figure><p> 找到你的 linux 分区<br> 如果不知道具体是哪个分区可以使用 <code>ls (hd1,gpt7)/boot/grub</code> 一个个试，当出现一堆文件就是在这个分区了。</p><p> <strong>ps:</strong> 之前进入 live 也可以直接使用  <code>sudo fdisk -l</code> 查看具体位置只不过名字不太一样，比如我的是 sdb7 则对应 （hd1,gpt7）</p></li><li><p>使用  <code>set</code>  把当前的引导换到原来那个系统路径</p> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">set root&#x3D;hd1,gpt7</span><br><span class="line">set prefix&#x3D;(hd1,gpt7)&#x2F;boot&#x2F;grub</span><br></pre></td></tr></table></figure><p> 再用  <code>set</code>  看一下这两项是不是已经改好了，因为前面的两句输入错的有人不会有回显，会创建新的项目<br> （我不知道我为什么知道( ╯-_-)╯┴—┴ )</p></li><li><p>确认之后 输入下面两条命令，不出意外应该进到系统了</p> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">insmod &#x2F;boot&#x2F;grub&#x2F;normal</span><br><span class="line">normal</span><br></pre></td></tr></table></figure></li><li><p>成功的请直接看跳到步骤7，一些奇怪的症状（希望有人补充），下面的是我的情况</p><p> 情况1：  输入  <code>normal</code>  出现载入界面 然后报错 回到 live 选择界面</p><p> 解决方案1： 往下翻一页发现多了一页，刚好看到有 parrot 回车成功进入系统。<br> 恩貌似是挂载成功了，但是启动还是引导有问题。可惜无法复现测试一下了。</p><p> 待添加</p></li><li><p>重新安装修复引导</p> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo grub-install &#x2F;dev&#x2F;sda7</span><br><span class="line">sudo update-grub</span><br></pre></td></tr></table></figure><p> <strong>ps:</strong> 注意这里我已经吧 u 盘拔掉了，所以不是 sdb7 了</p><p> 如下图，还好留了张图</p></li></ol><ol start="8"><li>重启收工</li></ol><h2 id="参考链接："><a href="#参考链接：" class="headerlink" title="参考链接："></a>参考链接：</h2><p><a href="https://www.cnblogs.com/zhaojk2010/p/4591838.html" target="_blank" rel="noopener">https://www.cnblogs.com/zhaojk2010/p/4591838.html</a><br><a href="https://blog.csdn.net/weixin_39772481/article/details/79212364" target="_blank" rel="noopener">https://blog.csdn.net/weixin_39772481/article/details/79212364</a><br>[ArchWiki-GRUB][3]<br>[3]: <a href="https://wiki.archlinux.org/index.php/GRUB_(简体中文)" target="_blank" rel="noopener">https://wiki.archlinux.org/index.php/GRUB_(简体中文)</a></p><p>话说 Arch 的 wiki 果然名不虚传啊</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 日常填坑 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Linux </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>使用Github Page 搭建hexo博客无法部署到GitHub（非空格问题）</title>
+      <link href="/2018-02-10-no-space-question-about-yml/"/>
+      <url>/2018-02-10-no-space-question-about-yml/</url>
+      
+        <content type="html"><![CDATA[<h2 id="环境-amp-背景"><a href="#环境-amp-背景" class="headerlink" title="环境&amp;背景"></a>环境&amp;背景</h2><ol><li>系统：win10 x64</li><li><a href="https://git-scm.com/" target="_blank" rel="noopener">Git</a> 版本：2.16.1</li><li><a href="https://nodejs.org/en/" target="_blank" rel="noopener">Node.js</a> 版本：v7.6.0<br> //这个是我好久之前啥也不懂的时候装的 官网居然已经8.4了. [Node.js 中文网](Node.js 中文网)这个看着更简洁一点，不过貌似是个人站点</li><li><a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> 版本：3.5.0 </li></ol><h2 id="问题-amp-解决方案"><a href="#问题-amp-解决方案" class="headerlink" title="问题&amp;解决方案"></a>问题&amp;解决方案</h2><h3 id="问题1"><a href="#问题1" class="headerlink" title="问题1"></a>问题1</h3><pre><code>npm install hexo-deployer-git --save</code></pre><p>执行该命令后出现如下提示</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">npm WARN deprecated swig@1.4.2: This package is no longer maintained</span><br><span class="line">hexo-site@0.0.0 C:\blog</span><br><span class="line">&#96;-- hexo-deployer-git@0.3.1</span><br><span class="line"></span><br><span class="line">npm WARN optional SKIPPING OPTIONAL DEPENDENCY: fsevents@^1.0.0 (node_modules\chokidar\node_modules\fsevents):</span><br><span class="line">npm WARN notsup SKIPPING OPTIONAL DEPENDENCY: Unsupported platform for fsevents@1.1.3: wanted &#123;&quot;os&quot;:&quot;darwin&quot;,&quot;arch&quot;:&quot;any&quot;&#125; (current: &#123;&quot;os&quot;:&quot;win32&quot;,&quot;arch&quot;:&quot;x64&quot;&#125;)</span><br></pre></td></tr></table></figure><p>我在 <a href="https://stackoverflow.com" target="_blank" rel="noopener">https://stackoverflow.com</a> 找到类似的<a href="https://stackoverflow.com/questions/33974189/npm-warn-deprecated-lodash2-4-2-lodash3-0-0-is-no-longer-maintained/33974237" target="_blank" rel="noopener">问题</a>。</p><ul><li>简单描述就是，这个包已经废弃，在别的地方有补充，所以只是一个警告不用担心，实际我的测试结果也是这样，保险起见确保执行过一次这个命令</li><li>不过只要看见这样的 <code>hexo-deployer-git@0.3.1</code> 的字眼就是已经安装好了</li><li>按照我收集的答案，这个插件貌似又集成回来了。hexo 3.0 的时候是分开的 </li></ul><h3 id="问题2"><a href="#问题2" class="headerlink" title="问题2"></a>问题2</h3><p> 部署到 GitHub，输入 <strong><code>hexo d</code></strong> 无提示，部署无效<br> deploy: 部分设置正确，有一个半角空格！！！（网上大多都是这个，然并卵）</p><h3 id="debug-时间"><a href="#debug-时间" class="headerlink" title="debug 时间"></a>debug 时间</h3><ul><li>hexo旧版本 需要将 type: 后面修改为 github ，如下图，（抱着一线希望试试）<br><img src="https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/deploy_hexo.png" alt=""></li></ul><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">remote: error: GH007: Your push would publish a private email address.</span><br></pre></td></tr></table></figure><p>出现上面这个错误，终于有个错了，应该有救</p><ul><li>解决方法如下<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">在GitHub的你账号网页上右上角，个人的登录退出的位置，找到setting：</span><br><span class="line">setting-&gt;emails-&gt;Keep my email address private，把这一项去掉勾选即可。</span><br></pre></td></tr></table></figure></li><li>别忘了吧 type 改回 git </li></ul><h3 id="回顾分析"><a href="#回顾分析" class="headerlink" title="回顾分析"></a>回顾分析</h3><p>貌似是因为我把邮箱隐藏了，git找不到，这个属于git的错误，<br>但不是 hexo，所以自然前面执行hexo命令的时候没有提示<br>PS:貌似是我当时注册的时候为了保护隐私自己弄了两个邮箱，，，隐藏了git 上传的那个(￣ε(#￣)</p><ul><li>希望能够帮助到遇到类似问题的人，之前查到的都是让加个空格的问题贼郁闷<br>（感觉不会有人遇到跟我一样的坑了，这个概率，，，）</li><li>不知不觉写了这么多，本来还想顺便写一下 hexo github 搭建博客的流程，改天再说吧(￣_,￣ )</li></ul>]]></content>
+      
+      
+      <categories>
+          
+          <category> 基础知识 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Linux </tag>
+            
+            <tag> 博客 </tag>
+            
+            <tag> Hexo </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>常用软件以及附加插件记录（长期不定期更新）</title>
+      <link href="/2018-02-05-my-favorite-software/"/>
+      <url>/2018-02-05-my-favorite-software/</url>
+      
+        <content type="html"><![CDATA[<p>PS:主要怕忘记..网上估计我肯定会忘干净，所以记录在这里，就算是备份吧</p><a id="more"></a><ul><li><h2 id="Linux"><a href="#Linux" class="headerlink" title="Linux"></a>Linux</h2><ul><li><h3 id="Atom"><a href="#Atom" class="headerlink" title="Atom"></a><a href="https://atom.io/" target="_blank" rel="noopener">Atom</a></h3><ul><li><h4 id="插件"><a href="#插件" class="headerlink" title="插件"></a>插件</h4><ul><li><code>Markdown Image Paste</code>  //图片粘贴</li><li><code>Markdown Scroll Sync</code>  //同步滚动</li><li><code>Simplified Chinese Menu</code> //汉化插件</li><li><code>Markdown Table Editor</code> //表格编辑美化</li><li><code>Markdown Themeable Pdf</code>  ///pdf 导出</li><li><code>language-markdown</code> //代码着色，片段生成 </li></ul></li></ul></li><li><h3 id="Pycharm"><a href="#Pycharm" class="headerlink" title="Pycharm"></a><a href="http://www.jetbrains.com/pycharm/" target="_blank" rel="noopener">Pycharm</a></h3></li></ul></li><li><h2 id="Windows"><a href="#Windows" class="headerlink" title="Windows"></a>Windows</h2><ul><li><h3 id="Wise-System-Monitor"><a href="#Wise-System-Monitor" class="headerlink" title="Wise System Monitor"></a><a href="http://www.wisecleaner.com/wise-system-monitor.html" target="_blank" rel="noopener">Wise System Monitor</a></h3><ul><li>轻量系统资源监视器:硬件信息查看，CPU和内存占用率，硬件温度，及网络流量，管理当前正在运行的进程等，还有一个简洁的悬浮窗。</li><li>貌似还有中文站点<a href="https://www.wisecleaner.com.cn/wise-system-monitor.html" target="_blank" rel="noopener">智慧清理</a>，他们家其他的产品好像也不错，占用的资源也少，有空看看 </li></ul></li><li><h3 id="Revo-Uninstaller-Pro"><a href="#Revo-Uninstaller-Pro" class="headerlink" title="Revo Uninstaller Pro"></a><a href="https://www.revouninstaller.com/" target="_blank" rel="noopener">Revo Uninstaller Pro</a></h3><ul><li>功能强大的软件卸载和垃圾清理软件，有猎人模式一键点击卸载、停止、删除应用程序；附带很多实用工具,如自动启动管理员、垃圾文件清理器、Windows工具、浏览清理器、Office 清理器、Windows清理器、形迹移除器、永久性删除工具和备份管理员功能!</li><li>官方提供 <a href="https://www.revouninstaller.com/revo_uninstaller_free_download.html" target="_blank" rel="noopener">Revo Uninstaller Free</a> 免费但是功能少的 Free 版本，和30天免费试用的付费的 Pro 版本</li><li>我用的破解版 <a href="https://pan.baidu.com/s/18SaHgrW6jDd-w29O7tQTfA" target="_blank" rel="noopener">Revo Uninstaller Pro 破解版</a><br>密码: 9125</li></ul></li></ul></li></ul>]]></content>
+      
+      
+      <categories>
+          
+          <category> 日常填坑 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 存档 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>Linux 下.desktop 文件编写</title>
+      <link href="/2018-02-03-linux-desktop-file/"/>
+      <url>/2018-02-03-linux-desktop-file/</url>
+      
+        <content type="html"><![CDATA[<h2 id="语法简介"><a href="#语法简介" class="headerlink" title="语法简介"></a>语法简介</h2><table><thead><tr><th>关键词</th><th>含义</th><th>必选</th></tr></thead><tbody><tr><td>[Desktop Entry]</td><td>文件头标签</td><td>√</td></tr><tr><td>Encoding</td><td>编码</td><td>x</td></tr><tr><td>Name</td><td>应用名称</td><td>√</td></tr><tr><td>Name[xx]</td><td>不同语言的应用名称</td><td>x</td></tr><tr><td>GenericName</td><td>程序通用名称</td><td>x</td></tr><tr><td>Comment</td><td>描述</td><td>x</td></tr><tr><td>Exec</td><td>执行的命令</td><td>√</td></tr><tr><td>Icon</td><td>图标路径</td><td>x</td></tr><tr><td>Type</td><td>启动器类型</td><td>√</td></tr><tr><td>Categories</td><td>应用的类型</td><td>x</td></tr><tr><td>Version</td><td>快捷方式版本</td><td>x</td></tr><tr><td>Terminal</td><td>是否使用终端</td><td>x</td></tr></tbody></table><h2 id="使用方式"><a href="#使用方式" class="headerlink" title="使用方式"></a>使用方式</h2><h3 id="以创建Pycharm快捷方式为例（顺便复习一下vim）"><a href="#以创建Pycharm快捷方式为例（顺便复习一下vim）" class="headerlink" title="以创建Pycharm快捷方式为例（顺便复习一下vim）"></a>以创建<code>Pycharm</code>快捷方式为例（顺便复习一下vim）</h3><ul><li><p>创建以.Dsektop为后缀的文件</p>  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vim Pycharm.desktop</span><br></pre></td></tr></table></figure></li></ul><ul><li>按<code>i</code>输入以下内容  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">[Desktop Entry]</span><br><span class="line">Type&#x3D;Application</span><br><span class="line">#desktop的类型，常见有Application和Link</span><br><span class="line"></span><br><span class="line">Encoding&#x3D;UTF-8</span><br><span class="line">Version&#x3D;1.0</span><br><span class="line">Name&#x3D;Pycharm</span><br><span class="line">Name[zh_CN]&#x3D;Pycharm开发环境</span><br><span class="line">#快捷方式名称，可根据系统语言匹配，优先匹配更细化语言标识</span><br><span class="line"></span><br><span class="line">GenericName&#x3D;Pycharm3</span><br><span class="line">Comment&#x3D;Pycharm3:The Python IDE</span><br><span class="line">#程序描述，鼠标经过时的名称提示，也可国际化</span><br><span class="line"></span><br><span class="line">Exec&#x3D;sh &#x2F;yourpath&#x2F;pycharm&#x2F;bin&#x2F;pycharm.sh</span><br><span class="line">#实际执行的命令</span><br><span class="line"></span><br><span class="line">Icon&#x3D;&#x2F;yourpath&#x2F;pycharm&#x2F;bin&#x2F;pycharm.png</span><br><span class="line">Terminal&#x3D;false</span><br><span class="line">#是否使用终端，默认为false，可选</span><br><span class="line"></span><br><span class="line">Categories&#x3D;Development;</span><br><span class="line">#菜单分类所属，可以确定该快捷方式位置，可选</span><br></pre></td></tr></table></figure></li></ul><ul><li>输入完成按<code>Esc</code>,输入<code>:wq</code></li><li>双击文件测试是否可以启动，无法启动则文件编写有问题或者权限不足</li><li>移动到<strong><code>/usr/share/applications/</code></strong>目录下</li></ul><p>完成如下图：<br><img src="https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/%E6%95%88%E6%9E%9C%E5%9B%BE.png" alt="效果图"></p><h2 id="Tips"><a href="#Tips" class="headerlink" title="Tips:"></a>Tips:</h2><ol><li><p>vim 将系统剪贴板内容粘贴到 vim 中命令为<code>&quot;+p</code></p></li><li><p>将 vim 内容粘贴到系统剪贴板<code>&quot;+nY</code>，其中 n 为往下 n 行，Y 为大写</p></li></ol>]]></content>
+      
+      
+      <categories>
+          
+          <category> 日常填坑 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Linux </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>推挽输出与开漏输出</title>
+      <link href="/2018-01-28-Push-Pull-and-Open-Drain/"/>
+      <url>/2018-01-28-Push-Pull-and-Open-Drain/</url>
+      
+        <content type="html"><![CDATA[<h2 id="推挽输出-Push-Pull-​"><a href="#推挽输出-Push-Pull-​" class="headerlink" title="推挽输出(Push-Pull)​"></a>推挽输出(Push-Pull)​</h2><ul><li><p>原理：推挽放大器电路中，一只三极管工作在导通、放大状态时，另一只三极管处于截止状态，当输入信号变化到另一个半周后，原先导通、放大的三极管进入截止，而原先截止的三极管进入导通、放大状态，两只三极管在不断地交替导通放大和截止变化，所以称为推挽放大器。</p><p><img src="https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/20201008193831.jpg" alt="推挽电路"></p></li></ul><ul><li>简单理解：如上图所示三极管的小箭头就是导通时的电流方向，Vout与V+或V-构成回路，Vin只负责开关。</li><li>可以吸电流也可以灌电流，相对于开漏，输出电平取决于IC电源。然而，一条总线上只能有一个推挽输出。</li><li>用途：驱动应用中，驱动LED、蜂鸣器，USART_TX、USART_CK、USART_RTS、MOSI、SPI主模式SCK、CAN_TX等需要较强驱动能力的场合</li></ul><h2 id="开漏输出-Open-Drain"><a href="#开漏输出-Open-Drain" class="headerlink" title="开漏输出(Open-Drain)"></a>开漏输出(Open-Drain)</h2><ul><li>开漏输出就是不输出电压，低电平时接地，高电平时不接地。如果外接上拉电阻，则在输出高电平时电压会拉到上拉电阻的电源电压。这种方式适合在连接的外设电压比单片机电压低的时候。</li><li>具备输出低电平能力，无外接电路则无输出高电平能力即悬空</li><li>典型的集电极开路电路如图所示。电路中右侧的三极管集电极什么都不接，所以叫做集电极开路，左侧的三极管用于反相作用，即左侧输入“0”时左侧三极管截止，VCC通过电阻加到右侧三极管基极，右侧三极管导通，右侧输出端连接到地，输出“0”。<img src="https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/20201008193841.png" alt="开漏输出"></li></ul><ul><li>用途：电平转换，加上拉电阻做驱动器，实现”线与“逻辑(I2C等接口总线应用中)，利用外电路提高驱动能力，利用上拉电阻提供高电平，没有上拉电阻只能输出低电平。</li></ul><h2 id="简单对比"><a href="#简单对比" class="headerlink" title="简单对比"></a>简单对比</h2><table><thead><tr><th></th><th>推挽输出</th><th>开漏输出</th></tr></thead><tbody><tr><td>高电平驱动能力</td><td>强</td><td>由外部上拉电阻提供</td></tr><tr><td>低电平驱动能力</td><td>强</td><td>强</td></tr><tr><td>电平跳变速度</td><td>快</td><td>由外部上拉电阻决定，电阻越小，反应越快，功耗越大</td></tr><tr><td>线与功能</td><td>不支持</td><td>支持</td></tr><tr><td>电平转换</td><td>不支持</td><td>支持</td></tr></tbody></table><p>PS: <a href="http://blog.sina.com.cn/s/blog_14e0394720102vewa.html" target="_blank" rel="noopener">参考链接</a>结合里面的内容做了些个人理解，麻烦的话看图吧(ˉ▽￣～)~秒懂</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 基础知识 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 电子基础 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>python2.x与python3.x中input的区别</title>
+      <link href="/2017-03-16-python2-python3-input/"/>
+      <url>/2017-03-16-python2-python3-input/</url>
+      
+        <content type="html"><![CDATA[<h1 id="input与raw-input"><a href="#input与raw-input" class="headerlink" title="input与raw_input"></a>input与raw_input</h1><h5 id="首先我们我们先聊聊python2和python3使用input中需要注意到的事情"><a href="#首先我们我们先聊聊python2和python3使用input中需要注意到的事情" class="headerlink" title="首先我们我们先聊聊python2和python3使用input中需要注意到的事情"></a>首先我们我们先聊聊python2和python3使用input中需要注意到的事情</h5><h3 id="在python2-x中"><a href="#在python2-x中" class="headerlink" title="在python2.x中"></a>在python2.x中</h3><ul><li><p>input可以直接接受数字，并返回数字</p></li><li><p>input不可以直接接受字符／字符串</p></li><li><p>对于input需要使用合法的python表达式才能读入字符串／字符</p></li><li><p>input会把你输入的内容当做python处理，这样会产生安全问题，</p><p>最好使用raw＿input！</p></li><li><p>raw＿input可以直接读入数字或者字符／字符串，并返回字符串</p></li><li><p>input() 本质上还是使用 raw_input() 来实现的，只是调用完raw_input() 之</p><p>后再调用 eval() 函数，所以，你甚至可以将表达式作为 input() 的参数，并</p><p>且它会计算表达式的值并返回（这段话只要理解前半部分就好了，反正现在</p><p>博主也不懂W(￣_￣)W</p></li></ul><h3 id="在python3-x中"><a href="#在python3-x中" class="headerlink" title="在python3.x中"></a>在python3.x中</h3><ul><li><p>整合了input和raw＿input没有raw＿input</p></li><li><p>input返回的结果均为字符串</p><p>———————————————————————–这是一条分割线(～￣▽￣)～———————————————————————–</p></li></ul><p>下面是相对应的测试代码<br><strong>python2.x</strong></p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1.</span>  &gt;&gt;&gt; user=raw_input(“please input:”)</span><br><span class="line"><span class="number">2.</span>  please input:wei <span class="comment"># raw_input 输入 字符串 成功</span></span><br><span class="line"><span class="number">3.</span>  &gt;&gt;&gt; user</span><br><span class="line"><span class="number">4.</span>  ‘wei’</span><br><span class="line"><span class="number">5.</span>  &gt;&gt;&gt; user=raw_input(“please input:”)</span><br><span class="line"><span class="number">6.</span>  please input:１１１</span><br><span class="line"><span class="number">7.</span>  &gt;&gt;&gt; user</span><br><span class="line"><span class="number">8.</span>  ‘<span class="number">111</span>’</span><br><span class="line"><span class="number">9.</span>   &gt;&gt;&gt; user=input(“please input:”)</span><br><span class="line"><span class="number">10.</span>  please input:wei <span class="comment"># input 输入字符串 失败</span></span><br><span class="line"><span class="number">11.</span>  Traceback (most recent call last\):</span><br><span class="line">12.  File “&lt;stdin&gt;”, line 1, in ?</span><br><span class="line">13.  File “&lt;string&gt;”, line 0, in ?</span><br><span class="line"><span class="number">14.</span>  NameError: name ‘wei’ <span class="keyword">is</span> <span class="keyword">not</span> defined</span><br><span class="line"><span class="number">15.</span>  user=input(“please input:”)</span><br><span class="line"><span class="number">16.</span>  please input:”wei”　　　　　　<span class="comment"># input 输入字符串</span></span><br><span class="line"><span class="number">17.</span>  &gt;&gt;&gt; user</span><br><span class="line"><span class="number">18.</span>  &gt;&gt;&gt;’wei’</span><br></pre></td></tr></table></figure><p><strong>python3.x</strong></p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">19.</span>  &gt;&gt;&gt; user=raw_input(“please input:”) <span class="comment">#没有了raw_input</span></span><br><span class="line"><span class="number">20.</span>  Traceback (most recent call last):</span><br><span class="line"><span class="number">21.</span>  File&lt;stdin&gt;”, line <span class="number">1</span>, <span class="keyword">in</span> &lt;module&gt;</span><br><span class="line"><span class="number">22.</span>  NameError: name ‘raw_input’ <span class="keyword">is</span> <span class="keyword">not</span> defined</span><br><span class="line"><span class="number">23.</span>  &gt;&gt;&gt; user=input(“please input:”) please input:wei</span><br><span class="line"><span class="number">24.</span>  &gt;&gt;&gt; user</span><br><span class="line"><span class="number">25.</span>  ‘wei’</span><br><span class="line"><span class="number">26.</span>  &gt;&gt;&gt; user=input(“please input:”) <span class="comment">#input的输出结果都是作为字符串</span></span><br><span class="line"><span class="number">27.</span>  please input:<span class="number">123</span></span><br><span class="line"><span class="number">28.</span>  &gt;&gt;&gt; user</span><br><span class="line"><span class="number">29.</span>  ‘<span class="number">123</span>’</span><br></pre></td></tr></table></figure>]]></content>
+      
+      
+      <categories>
+          
+          <category> 基础知识 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Python </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>Hello world!</title>
+      <link href="/2017-01-24-hello-world/"/>
+      <url>/2017-01-24-hello-world/</url>
+      
+        <content type="html"><![CDATA[<p>使用hello world作为第一篇博客，是因为博主刚好看到既然能叫它说话，就能让他做任何事！ –来自《梦断代码》</p><a id="more"></a><p>（感觉英语逼格更高点，但是博主看的是中文版，其实是懒的找-_-||）</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 杂七杂八 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> hello world </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+  
+  
+</search>
