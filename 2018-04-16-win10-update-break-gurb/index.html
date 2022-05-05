@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html>
+<head hexo-theme='https://volantis.js.org/#2.6.6'>
+  <meta charset="utf-8">
+  <!-- SEO相关 -->
+  
+    
+  
+  <!-- 渲染优化 -->
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <!-- 页面元数据 -->
+  
+    <title>记一次 win10 更新导致的双系统 grub 引导丢失（无法进入linux） - Sephiroth1s&#39;blog</title>
+  
+    <meta name="keywords" content="Linux">
+  
+  
+    <meta name="description" content="本来这两天折腾好爱国渠道，想到 parrot 还没配置，，，然而发现每次都进的 win10，之前一直没留意-_-||，只是感觉少了点什么。在 bios 里面设置了一下也是直接闪退，然后转 win10启动了">
+  
+
+  <!-- feed -->
+  
+    <link rel="alternate" href="/atom.xml" title="Sephiroth1s'blog">
+  
+
+  <!-- import meta -->
+  
+
+  <!-- link -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.13/css/all.min.css">
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-waves@0.7.6/dist/waves.min.css">
+
+  
+
+  
+
+  
+
+  
+
+  <!-- import link -->
+  
+
+  
+  
+    
+<link rel="stylesheet" href="/css/style.css">
+
+  
+
+  <script>
+    function setLoadingBarProgress(num) {
+      document.getElementById('loading-bar').style.width=num+"%";
+    }
+  </script>
+
+  
+  
+</head>
+
+<body>
+  
+  <div class="cover-wrapper">
+    
+      <cover class='cover post half'>
+        <div class='cover-body'>
+  <div class='a'>
+    
+    
+      <p class="title">Sephiroth1s'blog</p>
+    
+    
+      <p class="subtitle">The quieter you became,the more you are able to hear.</p>
+    
+  </div>
+  <div class='b'>
+    
+      <div class="m_search">
+        <form name="searchform" class="form u-search-form">
+          <input type="text" class="input u-search-input" placeholder="随便搜点什么吧" />
+          <i class="icon fas fa-search fa-fw"></i>
+        </form>
+      </div>
+    
+    <div class='menu navigation'>
+      <ul class='cover-list-h'>
+        
+          
+            <li>
+              <a class="nav home"
+                href="/"
+                
+                
+                id="home">
+                <i class='fas fa-home fa-fw'></i>首页
+              </a>
+            </li>
+          
+            <li>
+              <a class="nav home"
+                href="/about/"
+                
+                
+                id="about">
+                <i class='fas fa-address-book fa-fw'></i>关于我
+              </a>
+            </li>
+          
+            <li>
+              <a class="nav home"
+                href="/archives/"
+                
+                
+                id="archives">
+                <i class='fas fa-archive fa-fw'></i>归档
+              </a>
+            </li>
+          
+            <li>
+              <a class="nav home"
+                href="/friends/"
+                
+                
+                  target="_blank"
+                
+                id="friends">
+                <i class='fas fa-file-code fa-fw'></i>友链
+              </a>
+            </li>
+          
+            <li>
+              <a class="nav home"
+                href="/atom.xml"
+                
+                
+                id="atomxml">
+                <i class='fas fa-rss fa-fw'></i>订阅
+              </a>
+            </li>
+          
+        
+      </ul>
+    </div>
+  </div>
+</div>
+
+      </cover>
+    
+    <div id="loading-bar-wrapper">
+  <div id="loading-bar"></div>
+</div>
+<header class="l_header shadow blur">
+  <div class='container'>
+  <div class='wrapper'>
+    <div class='nav-sub'>
+      <p class="title"></p>
+      <ul class='switcher nav-list-h'>
+        <li><a class="s-comment fas fa-comments fa-fw" target="_self" href='javascript:void(0)'></a></li>
+        
+          <li><a class="s-toc fas fa-list fa-fw" target="_self" href='javascript:void(0)'></a></li>
+        
+      </ul>
+    </div>
+		<div class="nav-main">
+      
+        
+        <a class="title flat-box" target="_self" href='/'>
+          
+          
+          
+            Sephiroth1s'blog
+          
+          
+        </a>
+      
+
+			<div class='menu navigation'>
+				<ul class='nav-list-h'>
+          
+          
+          
+            
+            
+              <li>
+                <a class="flat-box" href=/
+                  
+                  
+                  
+                    id="home"
+                  >
+                  <i class='fas fa-home fa-fw'></i>博客
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="flat-box" href=/categories/
+                  
+                  
+                  
+                    id="categories"
+                  >
+                  <i class='fas fa-folder-open fa-fw'></i>分类
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="flat-box" href=/tags/
+                  
+                  
+                  
+                    id="tags"
+                  >
+                  <i class='fas fa-tags fa-fw'></i>标签
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="flat-box" href=/archives/
+                  
+                  
+                  
+                    id="archives"
+                  >
+                  <i class='fas fa-archive fa-fw'></i>归档
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="flat-box" href=/friends/
+                  
+                  
+                  
+                    id="friends"
+                  >
+                  <i class='fas fa-link fa-fw'></i>友链
+                </a>
+                
+              </li>
+            
+          
+          
+            
+            
+              <li>
+                <a class="flat-box" href=/about/
+                  
+                  
+                  
+                    id="about"
+                  >
+                  <i class='fas fa-info-circle fa-fw'></i>关于
+                </a>
+                
+              </li>
+            
+          
+          
+				</ul>
+			</div>
+
+      <div class="m_search">
+        <form name="searchform" class="form u-search-form">
+          <i class="icon fas fa-search fa-fw"></i>
+          <input type="text" class="input u-search-input" placeholder="随便搜点什么吧" />
+        </form>
+      </div>
+
+			<ul class='switcher nav-list-h'>
+				
+					<li><a class="s-search fas fa-search fa-fw" target="_self" href='javascript:void(0)'></a></li>
+				
+				<li>
+          <a class="s-menu fas fa-bars fa-fw" target="_self" href='javascript:void(0)'></a>
+          <ul class="menu-phone list-v navigation white-box">
+            
+              
+            
+              <li>
+                <a class="flat-box" href=/
+                  
+                  
+                  
+                    id="home"
+                  >
+                  <i class='fas fa-home fa-fw'></i>博客
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="flat-box" href=/categories/
+                  
+                  
+                  
+                    id="categories"
+                  >
+                  <i class='fas fa-folder-open fa-fw'></i>分类
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="flat-box" href=/tags/
+                  
+                  
+                  
+                    id="tags"
+                  >
+                  <i class='fas fa-tags fa-fw'></i>标签
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="flat-box" href=/archives/
+                  
+                  
+                  
+                    id="archives"
+                  >
+                  <i class='fas fa-archive fa-fw'></i>归档
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="flat-box" href=/friends/
+                  
+                  
+                  
+                    id="friends"
+                  >
+                  <i class='fas fa-link fa-fw'></i>友链
+                </a>
+                
+              </li>
+            
+          
+            
+              
+            
+              <li>
+                <a class="flat-box" href=/about/
+                  
+                  
+                  
+                    id="about"
+                  >
+                  <i class='fas fa-info-circle fa-fw'></i>关于
+                </a>
+                
+              </li>
+            
+          
+            
+          </ul>
+        </li>
+			</ul>
+		</div>
+	</div>
+  </div>
+</header>
+
+<script>setLoadingBarProgress(40);</script>
+
+  </div>
+
+
+  <div class="l_body">
+    <div class='body-wrapper'>
+      
+
+<div class='l_main'>
+  
+
+  
+    <article id="post" class="post white-box reveal shadow article-type-post" itemscope itemprop="blogPost">
+      
+
+
+  <section class='meta'>
+    
+      
+      
+        <a title='记一次 win10 更新导致的双系统 grub 引导丢失（无法进入linux）' href='/2018-04-16-win10-update-break-gurb/'><img class='thumbnail' src='https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/fdisk.png'></a>
+      
+      <div class="meta" id="header-meta">
+        
+          
+  <h1 class="title">
+    <a href="/2018-04-16-win10-update-break-gurb/">
+      记一次 win10 更新导致的双系统 grub 引导丢失（无法进入linux）
+    </a>
+  </h1>
+
+
+        
+        <div class='new-meta-box'>
+          
+            
+          
+            
+              
+<div class='new-meta-item author'>
+  <a href="https://sephiroth1s.top" rel="nofollow">
+    <img src="https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/20200606155559.jpg">
+    <p>Sephiroth1s</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+  
+  <div class='new-meta-item category'>
+    <a href='/categories/%E6%97%A5%E5%B8%B8%E5%A1%AB%E5%9D%91/' rel="nofollow">
+      <i class="fas fa-folder-open fa-fw" aria-hidden="true"></i>
+      <p>日常填坑</p>
+    </a>
+  </div>
+
+
+            
+          
+            
+              <div class="new-meta-item date">
+  <a class='notlink'>
+    <i class="fas fa-calendar-alt fa-fw" aria-hidden="true"></i>
+    <p>发布于：2018年4月16日</p>
+  </a>
+</div>
+
+            
+          
+            
+              
+  <div class="new-meta-item wordcount">
+    <a class='notlink'>
+      <i class="fas fa-keyboard fa-fw" aria-hidden="true"></i>
+      <p>字数：873字</p>
+    </a>
+  </div>
+  <div class="new-meta-item readtime">
+    <a class='notlink'>
+      <i class="fas fa-hourglass-half fa-fw" aria-hidden="true"></i>
+      <p>时长：3分钟</p>
+    </a>
+  </div>
+
+
+            
+          
+            
+              
+
+            
+          
+        </div>
+        
+          <hr>
+        
+      </div>
+    
+  </section>
+
+
+      <section class="article typo">
+        <div class="article-entry" itemprop="articleBody">
+          
+          <h2 id="闲话"><a href="#闲话" class="headerlink" title="闲话"></a>闲话</h2><ul>
+<li>本来这两天折腾好爱国渠道，想到 parrot 还没配置，，，然而发现每次都进的 win10，之前一直没留意-_-||，<br>只是感觉少了点什么。在 bios 里面设置了一下也是直接闪退，然后转 win10启动了 </li>
+</ul>
+<h2 id="LIVE-进入"><a href="#LIVE-进入" class="headerlink" title="LIVE 进入"></a>LIVE 进入</h2><ul>
+<li>先 从 LIVE 进入系统看下资料还在不在，看了下 boot 目录下面 grub 下没有看到明显的文件缺失，EFI 下面变成空的了。</li>
+<li>所以重新安装一下 grub 缺的文件就装回来了吧emmm，挂载原来的 linux 分区。</li>
+</ul>
+<h3 id="方案一"><a href="#方案一" class="headerlink" title="方案一"></a>方案一</h3><ol>
+<li><p>LIVE 进入，先查看一下 linux 的系统分区,如下图所示我的系统在 sda7</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo fdisk -l</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+
+<ol start="2">
+<li><p>挂载分区</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo mount &#x2F;dev&#x2F;sda7 &#x2F;mnt</span><br></pre></td></tr></table></figure></li>
+<li><p>暂时挂载需要用到的目录</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo mount --bind &#x2F;dev &#x2F;mnt&#x2F;dev</span><br><span class="line">sudo mount --bind &#x2F;proc &#x2F;mnt&#x2F;proc</span><br><span class="line">sudo mount --bind &#x2F;sys &#x2F;mnt&#x2F;sys</span><br></pre></td></tr></table></figure></li>
+<li><p>修改程序执行的 参考根目录位置为原系统目录</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo chroot &#x2F;mnt</span><br></pre></td></tr></table></figure></li>
+<li><p><span id="5">安装修复 grub</span></p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo grub-install &#x2F;dev&#x2F;sda7</span><br><span class="line">sduo update-grub</span><br></pre></td></tr></table></figure></li>
+<li><p>退出环境&amp;卸载挂载的目录和设备</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">exit</span><br><span class="line">sudo umount &#x2F;mnt&#x2F;dev</span><br><span class="line">sudo umount &#x2F;mnt&#x2F;proc</span><br><span class="line">sudo umount &#x2F;mnt&#x2F;sys</span><br><span class="line">sudo umount &#x2F;mount</span><br></pre></td></tr></table></figure></li>
+<li><p>重启收工</p>
+</li>
+</ol>
+<p>*<em>ps: *</em><br>在执行 <a href="#5">步骤5</a> 有可能遇到找不到文件问题 缺少EFI等，导致安装失败，所以我换了<a href="#5">方案二</a> </p>
+<h3 id="方案二（推荐）"><a href="#方案二（推荐）" class="headerlink" title="方案二（推荐）"></a>方案二（推荐）</h3><ol>
+<li><p>从 LIVE u盘选择界面按 c 进入 grub 命令行</p>
+</li>
+<li><p>输入 <code>set</code> 可以查看 当前引导是哪个分区</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cmdpath&#x3D;(hd0,gpt1)&#x2F;EFI&#x2F;parrot</span><br><span class="line">prefix&#x3D;(hd0,gpt1)&#x2F;boot&#x2F;grub</span><br><span class="line">root&#x3D;hd0,gpt1</span><br></pre></td></tr></table></figure>
+<p> 主要看上面这三个其他可以忽略。(hd0,gpt1)这个部分是第一块硬盘的第一个分区，即u盘。</p>
+</li>
+<li><p>输入 <code>ls</code> 显示类似如下信息</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(hd0,gpt1) (hd1,gpt2) (hd1,gpt3) (hd1,gpt4) (hd1,gpt5) (hd1,gpt6) (hd1,gpt7)......</span><br></pre></td></tr></table></figure>
+<p> 找到你的 linux 分区<br> 如果不知道具体是哪个分区可以使用 <code>ls (hd1,gpt7)/boot/grub</code> 一个个试，当出现一堆文件就是在这个分区了。</p>
+<p> <strong>ps:</strong> 之前进入 live 也可以直接使用  <code>sudo fdisk -l</code> 查看具体位置只不过名字不太一样，比如我的是 sdb7 则对应 （hd1,gpt7）</p>
+</li>
+<li><p>使用  <code>set</code>  把当前的引导换到原来那个系统路径</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">set root&#x3D;hd1,gpt7</span><br><span class="line">set prefix&#x3D;(hd1,gpt7)&#x2F;boot&#x2F;grub</span><br></pre></td></tr></table></figure>
+<p> 再用  <code>set</code>  看一下这两项是不是已经改好了，因为前面的两句输入错的有人不会有回显，会创建新的项目<br> （我不知道我为什么知道( ╯-_-)╯┴—┴ )</p>
+</li>
+<li><p>确认之后 输入下面两条命令，不出意外应该进到系统了</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">insmod &#x2F;boot&#x2F;grub&#x2F;normal</span><br><span class="line">normal</span><br></pre></td></tr></table></figure></li>
+<li><p>成功的请直接看跳到步骤7，一些奇怪的症状（希望有人补充），下面的是我的情况</p>
+<p> 情况1：  输入  <code>normal</code>  出现载入界面 然后报错 回到 live 选择界面</p>
+<p> 解决方案1： 往下翻一页发现多了一页，刚好看到有 parrot 回车成功进入系统。<br> 恩貌似是挂载成功了，但是启动还是引导有问题。可惜无法复现测试一下了。</p>
+<p> 待添加</p>
+</li>
+<li><p>重新安装修复引导</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo grub-install &#x2F;dev&#x2F;sda7</span><br><span class="line">sudo update-grub</span><br></pre></td></tr></table></figure>
+<p> <strong>ps:</strong> 注意这里我已经吧 u 盘拔掉了，所以不是 sdb7 了</p>
+<p> 如下图，还好留了张图</p>
+</li>
+</ol>
+
+<ol start="8">
+<li>重启收工</li>
+</ol>
+<h2 id="参考链接："><a href="#参考链接：" class="headerlink" title="参考链接："></a>参考链接：</h2><p><a href="https://www.cnblogs.com/zhaojk2010/p/4591838.html" target="_blank" rel="noopener">https://www.cnblogs.com/zhaojk2010/p/4591838.html</a><br><a href="https://blog.csdn.net/weixin_39772481/article/details/79212364" target="_blank" rel="noopener">https://blog.csdn.net/weixin_39772481/article/details/79212364</a><br>[ArchWiki-GRUB][3]<br>[3]: <a href="https://wiki.archlinux.org/index.php/GRUB_(简体中文)" target="_blank" rel="noopener">https://wiki.archlinux.org/index.php/GRUB_(简体中文)</a></p>
+<p>话说 Arch 的 wiki 果然名不虚传啊</p>
+
+          
+            <div class='article_footer'>
+              
+                
+  
+
+  
+    
+    
+
+<section class="widget copyright  desktop mobile">
+  <div class='content'>
+    
+      <blockquote>
+        
+          
+            <p>博客内容遵循 署名-非商业性使用-相同方式共享 4.0 国际 (CC BY-NC-SA 4.0) 协议</p>
+
+          
+        
+          
+            <p>本文永久链接是：<a href=https://sephiroth1s.top/2018-04-16-win10-update-break-gurb/>https://sephiroth1s.top/2018-04-16-win10-update-break-gurb/</a></p>
+          
+        
+          
+            <p>转载请注明出处</p>
+
+          
+        
+      </blockquote>
+    
+  </div>
+</section>
+
+  
+
+
+              
+            </div>
+          
+        </div>
+        
+          
+
+
+  <section class='meta' id="footer-meta">
+    <div class='new-meta-box'>
+      
+        
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-01-26T22:01:59+08:00">
+  <a class='notlink'>
+    <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
+    <p>更新于：2021年1月26日</p>
+  </a>
+</div>
+
+        
+      
+        
+          
+  
+  <div class="new-meta-item meta-tags"><a class="tag" href="/tags/Linux/" rel="nofollow"><i class="fas fa-hashtag fa-fw" aria-hidden="true"></i><p>Linux</p></a></div>
+
+
+        
+      
+        
+      
+        
+          
+  <div class="new-meta-item share -mob-share-list">
+  <div class="-mob-share-list share-body">
+    
+      
+        <a class="-mob-share-qq" title="" rel="external nofollow noopener noreferrer"
+          
+          href="http://connect.qq.com/widget/shareqq/index.html?url=https://sephiroth1s.top/2018-04-16-win10-update-break-gurb/&title=记一次 win10 更新导致的双系统 grub 引导丢失（无法进入linux） - Sephiroth1s'blog&pics=https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/fdisk.png&summary="
+          
+          >
+          
+            <img src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-assets/logo/128/qq.png">
+          
+        </a>
+      
+    
+      
+        <a class="-mob-share-qzone" title="" rel="external nofollow noopener noreferrer"
+          
+          href="https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=https://sephiroth1s.top/2018-04-16-win10-update-break-gurb/&title=记一次 win10 更新导致的双系统 grub 引导丢失（无法进入linux） - Sephiroth1s'blog&pics=https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/fdisk.png&summary="
+          
+          >
+          
+            <img src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-assets/logo/128/qzone.png">
+          
+        </a>
+      
+    
+      
+        <a class="-mob-share-weibo" title="" rel="external nofollow noopener noreferrer"
+          
+          href="http://service.weibo.com/share/share.php?url=https://sephiroth1s.top/2018-04-16-win10-update-break-gurb/&title=记一次 win10 更新导致的双系统 grub 引导丢失（无法进入linux） - Sephiroth1s'blog&pics=https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/fdisk.png&summary="
+          
+          >
+          
+            <img src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-assets/logo/128/weibo.png">
+          
+        </a>
+      
+    
+      
+        <a class="-mob-share-telegram" title="" rel="external nofollow noopener noreferrer"
+          
+            href="https://t.me/share/url?url=https://sephiroth1s.top/2018-04-16-win10-update-break-gurb/&text=记一次 win10 更新导致的双系统 grub 引导丢失（无法进入linux） - Sephiroth1s'blog"
+          
+          >
+          
+            <img src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-assets/logo/128/telegram.png">
+          
+        </a>
+      
+    
+  </div>
+</div>
+
+
+
+        
+      
+    </div>
+  </section>
+
+
+        
+        
+          <div class="prev-next">
+            
+              <a class='prev' href='/2018-05-28-virtualbox-uefi-shell/'>
+                <p class='title'><i class="fas fa-chevron-left" aria-hidden="true"></i>Virtualbox 开机进入UEFI shell</p>
+                <p class='content'>背景
+好久之前在虚拟机里面装的 parrot 发现启动之后没有进入引导界面，而是到了下面的奇怪界面。按英文就是也就是 UEFI shell 界面  。一直想修复一下又比较懒，用实机比较多，毕竟虚...</p>
+              </a>
+            
+            
+              <a class='next' href='/2018-02-10-no-space-question-about-yml/'>
+                <p class='title'>使用Github Page 搭建hexo博客无法部署到GitHub（非空格问题）<i class="fas fa-chevron-right" aria-hidden="true"></i></p>
+                <p class='content'>环境&amp;背景
+系统：win10 x64
+Git 版本：2.16.1
+Node.js 版本：v7.6.0 //这个是我好久之前啥也不懂的时候装的 官网居然已经8.4了. [Node.js 中...</p>
+              </a>
+            
+          </div>
+        
+      </section>
+    </article>
+  
+
+
+
+
+<!-- 根据页面mathjax变量决定是否加载MathJax数学公式js -->
+
+
+
+  <script>
+    window.subData = {
+      title: '记一次 win10 更新导致的双系统 grub 引导丢失（无法进入linux）',
+      tools: true
+    }
+  </script>
+
+
+</div>
+<aside class='l_side'>
+  
+  
+    
+    
+  
+
+  <section class="widget category shadow floatable desktop">
+    
+  <header>
+    
+      <a href='/categories/'><i class="fas fa-folder-open fa-fw" aria-hidden="true"></i><span class='name'>文章分类</span></a>
+    
+  </header>
+
+
+    <div class='content'>
+      <ul class="entry navigation">
+        
+          <li><a class="flat-box"
+            title="/categories/%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" href="/categories/%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
+            id="categoriesE59FBAE7A180E79FA5E8AF86"
+            ><div class='name'>基础知识</div><div class='badge'>(3)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/%E6%97%A5%E5%B8%B8%E5%A1%AB%E5%9D%91/" href="/categories/%E6%97%A5%E5%B8%B8%E5%A1%AB%E5%9D%91/"
+            id="categoriesE697A5E5B8B8E5A1ABE59D91"
+            ><div class='name'>日常填坑</div><div class='badge'>(7)</div></a></li>
+        
+          <li><a class="flat-box"
+            title="/categories/%E6%9D%82%E4%B8%83%E6%9D%82%E5%85%AB/" href="/categories/%E6%9D%82%E4%B8%83%E6%9D%82%E5%85%AB/"
+            id="categoriesE69D82E4B883E69D82E585AB"
+            ><div class='name'>杂七杂八</div><div class='badge'>(2)</div></a></li>
+        
+      </ul>
+    </div>
+  </section>
+
+
+  
+
+  
+    
+    
+  
+
+  <section class="widget tagcloud shadow floatable desktop mobile">
+    
+  <header>
+    
+      <a href='/tags/'><i class="fas fa-tags fa-fw" aria-hidden="true"></i><span class='name'>热门标签</span></a>
+    
+  </header>
+
+
+    <div class='content'>
+      <a href="/tags/Hexo/" style="font-size: 14px; color: #999">Hexo</a> <a href="/tags/Linux/" style="font-size: 24px; color: #555">Linux</a> <a href="/tags/Python/" style="font-size: 19px; color: #777">Python</a> <a href="/tags/hello-world/" style="font-size: 14px; color: #999">hello world</a> <a href="/tags/samba/" style="font-size: 14px; color: #999">samba</a> <a href="/tags/%E5%8D%9A%E5%AE%A2/" style="font-size: 19px; color: #777">博客</a> <a href="/tags/%E5%AD%98%E6%A1%A3/" style="font-size: 19px; color: #777">存档</a> <a href="/tags/%E7%94%B5%E5%AD%90%E5%9F%BA%E7%A1%80/" style="font-size: 14px; color: #999">电子基础</a>
+    </div>
+  </section>
+
+
+  
+
+  
+    
+    
+
+
+  <section class="widget toc-wrapper shadow floatable desktop mobile">
+    
+  <header>
+    
+      <i class="fas fa-list fa-fw" aria-hidden="true"></i><span class='name'>本文目录</span>
+    
+  </header>
+
+
+    <div class='content'>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#闲话"><span class="toc-text">闲话</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LIVE-进入"><span class="toc-text">LIVE 进入</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#方案一"><span class="toc-text">方案一</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#方案二（推荐）"><span class="toc-text">方案二（推荐）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考链接："><span class="toc-text">参考链接：</span></a></li></ol>
+    </div>
+  </section>
+
+
+  
+
+  
+
+
+</aside>
+
+
+  
+  <footer class="clearfix">
+    <br><br>
+    
+      
+        <div class="aplayer-container">
+          
+
+
+        </div>
+      
+    
+      
+        <br>
+        <div class="social-wrapper">
+          
+            
+              <a href="https://t.me/Zack_Fair0"
+                class="social fab fa-telegram-plane flat-btn"
+                target="_blank"
+                rel="external nofollow noopener noreferrer">
+              </a>
+            
+          
+            
+              <a href="mailto:sephiroth0xff@gmail.com"
+                class="social fas fa-envelope flat-btn"
+                target="_blank"
+                rel="external nofollow noopener noreferrer">
+              </a>
+            
+          
+            
+              <a href="https://github.com/sephiroth1s"
+                class="social fab fa-github flat-btn"
+                target="_blank"
+                rel="external nofollow noopener noreferrer">
+              </a>
+            
+          
+            
+              <a href="/atom.xml"
+                class="social fas fa-rss flat-btn"
+                target="_blank"
+                rel="external nofollow noopener noreferrer">
+              </a>
+            
+          
+        </div>
+      
+    
+      
+        <div><p>博客内容遵循 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener">署名-非商业性使用-相同方式共享 4.0 国际 (CC BY-NC-SA 4.0) 协议</a></p>
+</div>
+      
+    
+      
+        本站使用
+        <a href="https://volantis.js.org/" target="_blank" class="codename">Volantis</a>
+        作为主题，总访问量为
+          <span id="busuanzi_value_site_pv"><i class="fas fa-circle-notch fa-spin fa-fw" aria-hidden="true"></i></span>
+          次
+        
+      
+    
+      
+        <div class='copyright'>
+        <p><a href="https://sephiroth1s.top">Copyright © 2017-2020 Sephiroth1s</a></p>
+
+        </div>
+      
+    
+  </footer>
+
+<script>setLoadingBarProgress(80);</script>
+
+
+      <script>setLoadingBarProgress(60);</script>
+    </div>
+    <a class="s-top fas fa-arrow-up fa-fw" href='javascript:void(0)'></a>
+  </div>
+  
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4/dist/jquery.min.js"></script>
+
+
+  <script>
+    
+    var SEARCH_SERVICE = "hexo" || "hexo";
+    var ROOT = "/" || "/";
+    if (!ROOT.endsWith('/')) ROOT += '/';
+  </script>
+
+
+  <script async src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-volantis@2/js/instant_page.js" type="module" defer integrity="sha384-OeDn4XE77tdHo8pGtE1apMPmAipjoxUQ++eeJa6EtJCfHlvijigWiJpD7VDPWXV1"></script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/scrollreveal@4.0.6/dist/scrollreveal.min.js"></script>
+  <script type="text/javascript">
+    $(function() {
+      ScrollReveal().reveal('.l_main .reveal', {
+        distance: '8px',
+        duration: '800',
+        interval: '100',
+        scale: '1'
+      });
+    });
+  </script>
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/node-waves@0.7.6/dist/waves.min.js"></script>
+
+  <script type="text/javascript">
+    $(function() {
+      Waves.attach('.flat-btn', ['waves-button']);
+      Waves.attach('.float-btn', ['waves-button', 'waves-float']);
+      Waves.attach('.float-btn-light', ['waves-button', 'waves-float', 'waves-light']);
+      Waves.attach('.flat-box', ['waves-block']);
+      Waves.attach('.float-box', ['waves-block', 'waves-float']);
+      Waves.attach('.waves-image');
+      Waves.init();
+    });
+  </script>
+
+
+  <script defer src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-busuanzi@2.3/js/busuanzi.pure.mini.js"></script>
+
+
+
+  
+  
+  
+    
+<script src="https://cdn.jsdelivr.net/npm/jquery-backstretch@2.1.18/jquery.backstretch.min.js"></script>
+
+    <script type="text/javascript">
+      $(function(){
+        var imgs=["https://cdn.jsdelivr.net/gh/sephiroth1s/blog_img/img/test/sephiroth_right.jpg"];
+        if ('true' == 'true') {
+          function shuffle(arr){
+            /*From countercurrent-time*/
+            var n = arr.length;
+            while(n--) {
+              var index = Math.floor(Math.random() * n);
+              var temp = arr[index];
+              arr[index] = arr[n];
+              arr[n] = temp;
+            }
+          }
+          shuffle(imgs);
+        }
+        if ('') {
+          $('').backstretch(
+            imgs,
+          {
+            duration: "20000",
+            fade: "1500"
+          });
+        } else {
+          $.backstretch(
+            imgs,
+          {
+            duration: "20000",
+            fade: "1500"
+          });
+        }
+      });
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+<script src="/js/app.js"></script>
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/gh/xaoxuu/cdn-volantis@2.6.5/js/search.js"></script>
+
+
+
+
+
+
+
+<!-- 复制 -->
+
+  <script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !function (e, t, a) {
+    var initCopyCode = function(){
+      var copyHtml = '';
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="fas fa-copy"></i><span>COPY</span>';
+      copyHtml += '</button>';
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS('.btn-copy', {
+        target: function(trigger) {
+          return trigger.nextElementSibling;
+        }
+      });
+      clipboard.on('success', function(e) {
+        let $btn = $(e.trigger);
+        $btn.addClass('copied');
+        let $icon = $($btn.find('i'));
+        $icon.removeClass('fa-copy');
+        $icon.addClass('fa-check-circle');
+        let $span = $($btn.find('span'));
+        $span[0].innerText = 'COPIED';
+        
+        wait(function () { // 等待两秒钟后恢复
+          $icon.removeClass('fa-check-circle');
+          $icon.addClass('fa-copy');
+          $span[0].innerText = 'COPY';
+        }, 2000);
+      });
+      clipboard.on('error', function(e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass('copy-failed');
+        let $icon = $($btn.find('i'));
+        $icon.removeClass('fa-copy');
+        $icon.addClass('fa-times-circle');
+        let $span = $($btn.find('span'));
+        $span[0].innerText = 'COPY FAILED';
+        
+        wait(function () { // 等待两秒钟后恢复
+          $icon.removeClass('fa-times-circle');
+          $icon.addClass('fa-copy');
+          $span[0].innerText = 'COPY';
+        }, 2000);
+      });
+    }
+    initCopyCode();
+  }(window, document);
+</script>
+
+
+
+
+<!-- fancybox -->
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+<script>
+  function pjax_fancybox() {
+    $(".article-entry").find("img").not('.inline').not('a img').each(function () { //渲染 fancybox
+      var element = document.createElement("a"); // a 标签
+      $(element).attr("pjax-fancybox", "");  // 过滤 pjax
+      $(element).attr("href", $(this).attr("src"));
+      if ($(this).attr("data-original")) {
+        $(element).attr("href", $(this).attr("data-original"));
+      }
+      $(element).attr("data-fancybox", "images");
+      var caption = "";   // 描述信息
+      if ($(this).attr('alt')) {  // 标准 markdown 描述信息
+        $(element).attr('data-caption', $(this).attr('alt'));
+        caption = $(this).attr('alt');
+      }
+      var div = document.createElement("div");
+      $(div).addClass("fancybox");
+      $(this).wrap(div); // 最外层套 div ，其实主要作用还是 class 样式
+      var span = document.createElement("span");
+      $(span).addClass("image-caption");
+      $(span).text(caption); // 加描述
+      $(this).after(span);  // 再套一层描述
+      $(this).wrap(element);  // 最后套 a 标签
+    })
+    $(".article-entry").find("img").fancybox({
+      selector: '[data-fancybox="images"]',
+      hash: false,
+      loop: false,
+      closeClick: true,
+      helpers: {
+        overlay: {closeClick: true}
+      },
+      buttons: [
+        "zoom",
+        "close"
+      ]
+    });
+  };
+  $(function () {
+    pjax_fancybox();
+  });
+</script>
+
+
+
+
+  <script>setLoadingBarProgress(100);</script>
+</body>
+</html>
